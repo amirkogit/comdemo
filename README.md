@@ -1,0 +1,2 @@
+# comdemo
+Learning COM technologies
