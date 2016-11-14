@@ -7,6 +7,7 @@
   <ItemGroup>
     <ClCompile Include="Precompiled.cpp" />
     <ClCompile Include="Server.cpp" />
+    <ClCompile Include="Registration.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Exports.def" />

@@ -1,2 +1,4 @@
 LIBRARY
 DllGetClassObject PRIVATE
+DllRegisterServer PRIVATE
+DllUnregisterServer PRIVATE
