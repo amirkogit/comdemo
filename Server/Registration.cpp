@@ -23,6 +23,75 @@ Transaction CreateTransaction()
                                          nullptr)); // description
 }
 
+struct RegistryKeyTraits
+{
+    typedef HKEY pointer;
+
+    static pointer invalid() throw()
+    {
+        return nullptr;
+    }
+
+    static void close(pointer value) throw()
+    {
+        HANDLE_VERIFY_(ERROR_SUCCESS,RegCloseKey(value));
+    }
+};
+
+typedef unique_handle<RegistryKeyTraits> RegistryKey;
+
+// Create a registry key
+RegistryKey CreateRegistryKey(HKEY key,
+                              wchar_t const * path,
+                              Transaction const & transaction,
+                              REGSAM access)
+{
+    HKEY handle = nullptr;
+
+    auto result = RegCreateKeyTransacted(key,
+                                         path,
+                                         0, // reserved
+                                         nullptr, // class
+                                         REG_OPTION_NON_VOLATILE,
+                                         access,
+                                         nullptr, // default security descriptor
+                                         &handle,
+                                         nullptr, // disposition
+                                         transaction.get(),
+                                         nullptr); // reserved
+
+    if (ERROR_SUCCESS != result)
+    {
+        SetLastError(result);
+    }
+
+    return RegistryKey(handle);
+}
+
+// Open a registry key
+RegistryKey OpenRegistryKey(HKEY key,
+                            wchar_t const * path,
+                            Transaction const & transaction,
+                            REGSAM access)
+{
+    HKEY handle = nullptr;
+
+    auto result = RegOpenKeyTransacted(key,
+                                       path,
+                                       0,
+                                       access,
+                                       &handle,
+                                       transaction.get(),
+                                       nullptr);
+
+    if (ERROR_SUCCESS != result)
+    {
+        SetLastError(result);
+    }
+
+    return RegistryKey(handle);
+}
+
 HRESULT __stdcall DllRegisterServer()
 {
     auto transaction = CreateTransaction();
