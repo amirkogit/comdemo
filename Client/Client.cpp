@@ -3,6 +3,13 @@
 
 using namespace Microsoft::WRL;
 
+// Note:
+// Method 1: Registration based COM activation
+// In the command prompt, type the following to register the Server.dll component:
+// C:\regsvr32 Server.dll
+// To unregister:
+// C:\ regsvr32 /u Server.dll
+
 int main()
 {
     ComRuntime runtime;
