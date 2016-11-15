@@ -92,6 +92,144 @@ RegistryKey OpenRegistryKey(HKEY key,
     return RegistryKey(handle);
 }
 
+// Options for table entry for registry
+enum class EntryOption
+{
+    None,
+    Delete,
+    FileName
+};
+
+struct Entry
+{
+    wchar_t const * Path;
+    EntryOption Option;
+    wchar_t const * Name;
+    wchar_t const * Value;
+};
+
+static Entry Table[] =
+{
+    {
+        L"Software\\Classes\\CLSID\\{d4fc6132-a367-4da0-ad41-ad58e8bd8f7b}",
+        EntryOption::Delete,
+        nullptr,
+        L"Hen"
+    },
+
+    {
+        L"Software\\Classes\\CLSID\\{d4fc6132-a367-4da0-ad41-ad58e8bd8f7b}\\InprocServer32",
+        EntryOption::FileName,
+    },
+
+    {
+        L"Software\\Classes\\CLSID\\{d4fc6132-a367-4da0-ad41-ad58e8bd8f7b}\\InprocServer32",
+        EntryOption::None,
+        L"ThreadingModel",
+        L"Free"
+    }
+};
+
+// helper function to unregister dll
+bool UnRegister(Transaction const & transaction)
+{
+    for (auto const & entry : Table)
+    {
+        if (EntryOption::Delete != entry.Option)
+        {
+            continue;
+        }
+
+        auto key = OpenRegistryKey(HKEY_LOCAL_MACHINE,
+                                   entry.Path,
+                                   transaction,
+                                   DELETE | KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE | KEY_SET_VALUE);
+
+        if (!key)
+        {
+            if (ERROR_FILE_NOT_FOUND == GetLastError())
+            {
+                continue;
+            }
+
+            return false;
+        }
+
+        auto result = RegDeleteTree(key.get(),
+                                    nullptr); // delete the key itself
+
+        if (ERROR_SUCCESS != result)
+        {
+            SetLastError(result);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// helper function to register dll
+bool Register(Transaction const & transaction)
+{
+    if (!UnRegister(transaction))
+    {
+        return false;
+    }
+
+    wchar_t filename[MAX_PATH];
+
+    auto const length = GetModuleFileName(reinterpret_cast<HMODULE>(&__ImageBase), // s_serverModule
+                                          filename,
+                                          _countof(filename));
+
+    if (0 == length || _countof(filename) == length)
+    {
+        return false;
+    }
+
+    for (auto const & entry : Table)
+    {
+        auto key = CreateRegistryKey(HKEY_LOCAL_MACHINE,
+                                     entry.Path,
+                                     transaction,
+                                     KEY_WRITE);
+
+        if (!key)
+        {
+            return false;
+        }
+
+        if (EntryOption::FileName != entry.Option && !entry.Value)
+        {
+            continue;
+        }
+
+        auto value = entry.Value;
+
+        if (!value)
+        {
+            ASSERT(EntryOption::FileName == entry.Option);
+            value = filename;
+        }
+
+        auto result = RegSetValueEx(key.get(),
+                                    entry.Name,
+                                    0,// reserved
+                                    REG_SZ,
+                                    reinterpret_cast<BYTE const *>(value),
+                                    static_cast<DWORD>(sizeof(wchar_t) * (wcslen(value) + 1)));
+
+        if (ERROR_SUCCESS != result)
+        {
+            TRACE(L"RegSetValueEx failed %d\n", result);
+            SetLastError(result);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 HRESULT __stdcall DllRegisterServer()
 {
     auto transaction = CreateTransaction();
@@ -101,7 +239,11 @@ HRESULT __stdcall DllRegisterServer()
         return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    // register here
+    if (!Register(transaction))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
     if (!CommitTransaction(transaction.get()))
     {
         return HRESULT_FROM_WIN32(GetLastError());
@@ -119,7 +261,11 @@ HRESULT __stdcall DllUnregisterServer()
         return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    // unregister here
+    if (!UnRegister(transaction))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
     if (!CommitTransaction(transaction.get()))
     {
         return HRESULT_FROM_WIN32(GetLastError());
