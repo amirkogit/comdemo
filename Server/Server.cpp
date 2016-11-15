@@ -1,11 +1,21 @@
 #include "Precompiled.h"
 #include "Server.h"
 
+static long s_serverLock;
+
 struct Hen : IHen
 {
     long m_count;
 
-    Hen() : m_count(0) {}
+    Hen() : m_count(0) 
+    {
+        _InterlockedIncrement(&s_serverLock);
+    }
+
+    ~Hen()
+    {
+        _InterlockedDecrement(&s_serverLock);
+    }
 
     ULONG __stdcall AddRef() override
     {
@@ -157,8 +167,17 @@ struct Hatchery : IClassFactory
         return hr;
     }
 
-    HRESULT __stdcall LockServer(BOOL /*lock*/) override
+    HRESULT __stdcall LockServer(BOOL lock) override
     {
+        if (lock)
+        {
+            _InterlockedIncrement(&s_serverLock);
+        }
+        else
+        {
+            _InterlockedDecrement(&s_serverLock);
+        }
+
         return S_OK;
     }
 };
@@ -180,3 +199,27 @@ HRESULT __stdcall DllGetClassObject(CLSID const & clsid,
     return CLASS_E_CLASSNOTAVAILABLE;
 }
 
+HRESULT __stdcall DllCanUnloadNow()
+{
+    TRACE(L"DllCanUnloadNow %s\n", s_serverLock ? L"No!" : L"Yes!");
+    return s_serverLock ? S_FALSE : S_OK;
+}
+
+BOOL WINAPI DllMain(HINSTANCE module, DWORD reason, void *)
+{
+    if (DLL_PROCESS_ATTACH == reason)
+    {
+        DisableThreadLibraryCalls(module);
+        TRACE(L"LoadLibrary\n");
+    }
+    else if (DLL_PROCESS_DETACH == reason)
+    {
+        TRACE(L"FreeLibrary\n");
+    }
+    else
+    {
+        ASSERT(false);
+    }
+
+    return TRUE;
+}

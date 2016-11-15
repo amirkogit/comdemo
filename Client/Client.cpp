@@ -66,4 +66,12 @@ int main()
                         reinterpret_cast<void **>(hen.GetAddressOf())));
 
     hen->Cluck();
+
+    // unloading the DLL from the client side
+    for (;;)
+    {
+        CoFreeUnusedLibrariesEx(1000,0); // 1000 ms delay ; 2nd parameter is reserved
+        hen.Reset();
+        Sleep(1000);
+    }
 }
