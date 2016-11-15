@@ -7,4 +7,7 @@
     <ClCompile Include="Precompiled.cpp" />
     <ClCompile Include="Client.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Manifest.xml" />
+  </ItemGroup>
 </Project>
