@@ -50,6 +50,8 @@ struct Hen : IHen
     }
 };
 
+// Replacing custom IHatchery interface with the IClassFactory interface
+#if 0
 struct Hatchery : IHatchery
 {
     ULONG __stdcall AddRef() override
@@ -93,6 +95,70 @@ struct Hatchery : IHatchery
         }
 
         (*result)->AddRef();
+        return S_OK;
+    }
+};
+#endif // 0
+
+struct Hatchery : IClassFactory
+{
+    ULONG __stdcall AddRef() override
+    {
+        return 2;
+    }
+
+    ULONG __stdcall Release() override
+    {
+        return 1;
+    }
+
+    HRESULT __stdcall QueryInterface(IID const & id,
+        void ** result) override
+    {
+        ASSERT(result);
+
+        if (id == __uuidof(IClassFactory) ||
+            id == __uuidof(IUnknown))
+        {
+            *result = static_cast<IClassFactory *>(this);
+        }
+        else
+        {
+            *result = 0;
+            return E_NOINTERFACE;
+        }
+
+        return S_OK;
+    }
+
+    HRESULT __stdcall CreateInstance(IUnknown * outer,
+        IID const & iid,
+        void ** result) override
+    {
+        ASSERT(result);
+        *result = nullptr;
+
+        if (outer)
+        {
+            return CLASS_E_NOAGGREGATION;
+        }
+
+        auto hen = new (std::nothrow) Hen;
+
+        if (!hen)
+        {
+            return E_OUTOFMEMORY;
+        }
+
+        hen->AddRef();
+        auto hr = hen->QueryInterface(iid, result);
+        hen->Release();
+
+        return hr;
+    }
+
+    HRESULT __stdcall LockServer(BOOL /*lock*/) override
+    {
         return S_OK;
     }
 };

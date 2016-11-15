@@ -12,9 +12,29 @@ using namespace Microsoft::WRL;
 
 int main()
 {
+    // Replacing with IClassFactory
+#if 0
     ComRuntime runtime;
 
     ComPtr<IHatchery> hatchery;
+
+    HR(CoGetClassObject(__uuidof(Hen),
+        CLSCTX_INPROC_SERVER,
+        nullptr,
+        __uuidof(hatchery),
+        reinterpret_cast<void **>(hatchery.GetAddressOf())));
+
+    ComPtr<IHen> hen;
+
+    HR(hatchery->CreateHen(hen.GetAddressOf()));
+
+    hen->Cluck();
+#endif // 0
+
+    // Using IClassFactory
+    ComRuntime runtime;
+
+    ComPtr<IClassFactory> hatchery;
 
     HR(CoGetClassObject(__uuidof(Hen),
                         CLSCTX_INPROC_SERVER,
@@ -24,7 +44,9 @@ int main()
 
     ComPtr<IHen> hen;
 
-    HR(hatchery->CreateHen(hen.GetAddressOf()));
+    HR(hatchery->CreateInstance(nullptr,
+                                __uuidof(hen),
+                                reinterpret_cast<void **>(hen.GetAddressOf())));
 
     hen->Cluck();
 }
