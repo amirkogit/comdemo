@@ -32,21 +32,38 @@ int main()
 #endif // 0
 
     // Using IClassFactory
+#if 0
     ComRuntime runtime;
 
     ComPtr<IClassFactory> hatchery;
 
     HR(CoGetClassObject(__uuidof(Hen),
-                        CLSCTX_INPROC_SERVER,
-                        nullptr,
-                        __uuidof(hatchery),
-                        reinterpret_cast<void **>(hatchery.GetAddressOf())));
+        CLSCTX_INPROC_SERVER,
+        nullptr,
+        __uuidof(hatchery),
+        reinterpret_cast<void **>(hatchery.GetAddressOf())));
 
     ComPtr<IHen> hen;
 
     HR(hatchery->CreateInstance(nullptr,
-                                __uuidof(hen),
-                                reinterpret_cast<void **>(hen.GetAddressOf())));
+        __uuidof(hen),
+        reinterpret_cast<void **>(hen.GetAddressOf())));
+
+    hen->Cluck();
+#endif // 0
+
+    // using simplier method:
+    // calling CoCreateInstance() method instead of CreateInstance
+
+    ComRuntime runtime;
+
+    ComPtr<IHen> hen;
+
+    HR(CoCreateInstance(__uuidof(Hen),
+                        nullptr,
+                        CLSCTX_INPROC_SERVER,
+                        __uuidof(hen),
+                        reinterpret_cast<void **>(hen.GetAddressOf())));
 
     hen->Cluck();
 }
