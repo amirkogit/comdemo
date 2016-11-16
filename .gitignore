@@ -47,3 +47,6 @@ x64/
 ipch/
 Sample.VC.db
 Sample.VC.VC.opendb
+Proxy/*.obj
+Proxy/*.lib
+Proxy/*.exp
