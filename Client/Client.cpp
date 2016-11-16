@@ -11,6 +11,17 @@ using namespace Microsoft::WRL;
 // To unregister:
 // C:\ regsvr32 /u Server.dll
 
+// implementing remotable client interfaces
+struct EventHandler : RuntimeClass<RuntimeClassFlags<ClassicCom>,
+                                   IAsyncHenEventHandler>
+{
+    HRESULT __stdcall OnCluck() override
+    {
+        TRACE(L"OnCluck\n");
+        return S_OK;
+    }
+};
+
 int main()
 {
     // Replacing with IClassFactory
@@ -101,6 +112,8 @@ int main()
     hen->Cluck();
 #endif // 0
 
+
+#if 0
     // demo: local interfaces and proxies
     ComRuntime runtime(Apartment::MultiThreaded);
 
@@ -117,5 +130,40 @@ int main()
     if (S_OK == hen.CopyTo(local.GetAddressOf()))
     {
         local->Cluck();
+    }
+#endif // 0
+
+    // implementing remotable client interfaces
+    ComRuntime runtime(Apartment::MultiThreaded);
+
+    ComPtr<IUnknown> hen;
+
+    HR(CoCreateInstance(__uuidof(Hen),
+                        nullptr,
+                        CLSCTX_INPROC_SERVER,
+                        __uuidof(hen),
+                        reinterpret_cast<void **>(hen.GetAddressOf())));
+
+    ComPtr<IHen> local;
+
+    if (S_OK == hen.CopyTo(local.GetAddressOf()))
+    {
+        local->Cluck();
+    }
+
+    ComPtr<IAsyncHen> async;
+
+    if (S_OK == hen.CopyTo(async.GetAddressOf()))
+    {
+        auto handler = Make<EventHandler>();
+
+        HR(async->SetEventHandler(handler.Get()));
+    }
+
+    MSG message;
+
+    while (BOOL result = GetMessage(&message, 0, 0, 0))
+    {
+        if(-1 != result) DispatchMessage(&message);
     }
 }

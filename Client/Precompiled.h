@@ -2,6 +2,10 @@
 
 #include <wrl.h>
 
+#include <atlbase.h>
+#define ASSERT ATLASSERT
+#define TRACE ATLTRACE
+
 struct ComException
 {
     HRESULT result;
