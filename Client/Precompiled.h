@@ -23,12 +23,18 @@ inline void HR(HRESULT const result)
     }
 }
 
+enum class Apartment
+{
+    MultiThreaded = COINIT_MULTITHREADED,
+    SingleThreaded = COINIT_APARTMENTTHREADED
+};
+
 struct ComRuntime
 {
-    ComRuntime()
+    explicit ComRuntime(Apartment apartment = Apartment::MultiThreaded)
     {
         HR(CoInitializeEx(nullptr,
-            COINIT_MULTITHREADED));
+            static_cast<DWORD>(apartment)));
     }
     ~ComRuntime()
     {

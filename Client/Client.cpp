@@ -55,7 +55,7 @@ int main()
     // using simplier method:
     // calling CoCreateInstance() method instead of CreateInstance
 
-    ComRuntime runtime;
+    ComRuntime runtime(Apartment::MultiThreaded);
 
     ComPtr<IHen> hen;
 
