@@ -238,6 +238,7 @@ HRESULT __stdcall DllCanUnloadNow()
     return s_serverLock ? S_FALSE : S_OK;
 }
 
+#if 0
 BOOL WINAPI DllMain(HINSTANCE module, DWORD reason, void *)
 {
     if (DLL_PROCESS_ATTACH == reason)
@@ -256,3 +257,4 @@ BOOL WINAPI DllMain(HINSTANCE module, DWORD reason, void *)
 
     return TRUE;
 }
+#endif // 0
