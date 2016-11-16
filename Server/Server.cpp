@@ -1,9 +1,13 @@
 #include "Precompiled.h"
 #include "Server.h"
+#include "..\Proxy\Hen.h"
+#include <wrl.h>
+
+using namespace Microsoft::WRL;
 
 static long s_serverLock;
 
-struct Hen : IHen
+struct Hen : IHen, IAsyncHen
 {
     long m_count;
 
@@ -44,6 +48,10 @@ struct Hen : IHen
         {
             *result = static_cast<IHen *>(this);
         }
+        else if(id == __uuidof(IAsyncHen))
+        {
+            *result = static_cast<IAsyncHen *>(this);
+        }
         else
         {
             *result = 0;
@@ -57,6 +65,31 @@ struct Hen : IHen
     void __stdcall Cluck() override
     {
         TRACE(L"Cluck\n");
+    }
+
+    HRESULT __stdcall SetEventHandler(IAsyncHenEventHandler * handler) override
+    {
+        ASSERT(handler);
+
+        ComPtr<IAsyncHenEventHandler> reference(handler);
+
+        auto ok = TrySubmitThreadpoolCallback([](PTP_CALLBACK_INSTANCE, void * context)
+        {
+            ComPtr<IAsyncHenEventHandler> handler;
+            handler.Attach(static_cast<IAsyncHenEventHandler *>(context));
+
+            Sleep(1000);
+
+            handler->OnCluck();
+        },
+        reference.Get(), nullptr);
+
+        if(ok)
+        {
+            reference.Detach();
+        }
+
+        return ok ? S_OK : HRESULT_FROM_WIN32(GetLastError());
     }
 };
 
