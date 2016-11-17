@@ -136,6 +136,11 @@ int main()
     // implementing remotable client interfaces
     ComRuntime runtime(Apartment::MultiThreaded);
 
+    // checking the apartment type
+    APTTYPE type;
+    APTTYPEQUALIFIER qualifier;
+    HR(CoGetApartmentType(&type,&qualifier));
+
     ComPtr<IUnknown> hen;
 
     HR(CoCreateInstance(__uuidof(Hen),
