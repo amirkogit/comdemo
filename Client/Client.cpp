@@ -134,7 +134,7 @@ int main()
 #endif // 0
 
     // implementing remotable client interfaces
-    ComRuntime runtime(Apartment::MultiThreaded);
+    ComRuntime runtime(Apartment::SingleThreaded);
 
     // checking the apartment type
     APTTYPE type;

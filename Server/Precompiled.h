@@ -9,3 +9,4 @@
 
 #include <ktmw32.h>
 #pragma comment(lib, "ktmw32.lib")
+#pragma comment(lib, "rpcrt4.lib")

@@ -127,7 +127,51 @@ static Entry Table[] =
         EntryOption::None,
         L"ThreadingModel",
         L"Free"
+    },
+
+    {
+        L"Software\\Classes\\CLSID\\{2c9db197-83b9-47c3-be14-aed29daa1bb1}",
+        EntryOption::Delete,
+        nullptr,
+        L"Hen Proxy"
+    },
+    {
+        L"Software\\Classes\\CLSID\\{2c9db197-83b9-47c3-be14-aed29daa1bb1}\\InprocServer32",
+        EntryOption::FileName
+    },
+    {
+        L"Software\\Classes\\CLSID\\{2c9db197-83b9-47c3-be14-aed29daa1bb1}\\InprocServer32",
+        EntryOption::None,
+        L"ThreadingModel",
+        L"Both"
+    },
+
+    {
+        L"Software\\Classes\\Interface\\{2c9db197-83b9-47c3-be14-aed29daa1bb1}",
+        EntryOption::Delete,
+        nullptr,
+        L"IAsyncHenEventHandler"
+    },
+    {
+        L"Software\\Classes\\Interface\\{2c9db197-83b9-47c3-be14-aed29daa1bb1}\\ProxyStubClsid32",
+        EntryOption::None,
+        nullptr,
+        L"{2c9db197-83b9-47c3-be14-aed29daa1bb1}"
+    },
+
+    {
+        L"Software\\Classes\\Interface\\{03662d63-ac6a-4e70-b768-83a3c39d26aa}",
+        EntryOption::Delete,
+        nullptr,
+        L"IAsyncHen"
+    },
+    {
+        L"Software\\Classes\\Interface\\{03662d63-ac6a-4e70-b768-83a3c39d26aa}\\ProxyStubClsid32",
+        EntryOption::None,
+        nullptr,
+        L"{2c9db197-83b9-47c3-be14-aed29daa1bb1}"
     }
+
 };
 
 // helper function to unregister dll

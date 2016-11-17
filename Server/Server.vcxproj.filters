@@ -8,6 +8,9 @@
     <ClCompile Include="Precompiled.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Registration.cpp" />
+    <ClCompile Include="..\Proxy\dlldata.c" />
+    <ClCompile Include="..\Proxy\Hen_i.c" />
+    <ClCompile Include="..\Proxy\Hen_p.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Exports.def" />

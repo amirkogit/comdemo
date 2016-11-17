@@ -30,7 +30,7 @@ struct Hen : IHen, IAsyncHen
     {
         ULONG result = _InterlockedDecrement(&m_count);
 
-        if (0 == m_count)
+        if (0 == result)
         {
             delete this;
         }
@@ -215,12 +215,26 @@ struct Hatchery : IClassFactory
     }
 };
 
+extern "C"
+HRESULT __stdcall ProxyDllGetClassObject(CLSID const & clsid,
+                                         IID const & iid,
+                                         void ** result);
+
 HRESULT __stdcall DllGetClassObject(CLSID const & clsid,
                                     IID const & iid,
                                     void ** result)
 {
     ASSERT(result);
     *result = nullptr;
+
+    auto hr = ProxyDllGetClassObject(clsid, 
+                                     iid,
+                                     result);
+    
+    if (CLASS_E_CLASSNOTAVAILABLE != hr)
+    {
+        return hr;
+    }
 
     if(__uuidof(Hen) == clsid)
     {
@@ -232,8 +246,18 @@ HRESULT __stdcall DllGetClassObject(CLSID const & clsid,
     return CLASS_E_CLASSNOTAVAILABLE;
 }
 
+extern "C"
+HRESULT __stdcall ProxyDllCanUnloadNow();
+
 HRESULT __stdcall DllCanUnloadNow()
 {
+    auto hr = ProxyDllCanUnloadNow();
+    
+    if(S_OK != hr)
+    {
+        return hr;
+    }
+
     TRACE(L"DllCanUnloadNow %s\n", s_serverLock ? L"No!" : L"Yes!");
     return s_serverLock ? S_FALSE : S_OK;
 }
