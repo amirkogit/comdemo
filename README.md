@@ -9,5 +9,8 @@ This repository demonstrates the following :
 - Tracking lifetime requirements by COM server
 - How COM clients may schedule COM servers to be unloaded
 - COM remoting architecture, including local and remotable interfaces, proxies and stubs, IDL and the MIDL compiler
+- Real example that shows how to use IFileOpenDialog from Windows Shell SDK
 
-References: Pluralsight course on "Essentials of COM"
+References: 
+- Pluralsight course on "Essentials of COM"
+- MSDN
